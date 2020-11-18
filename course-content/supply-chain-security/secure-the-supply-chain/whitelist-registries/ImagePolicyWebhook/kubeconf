@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Config
+
+# clusters refers to the remote service.
+clusters:
+- cluster:
+    certificate-authority: /etc/kubernetes/admission/external-cert.pem  # CA for verifying the remote service.
+    server: https://external-service:1234/check-image                   # URL of remote service to query. Must use 'https'.
+  name: image-checker
+
+contexts:
+- context:
+    cluster: image-checker
+    user: api-server
+  name: image-checker
+current-context: image-checker
+preferences: {}
+
+# users refers to the API server's webhook configuration.
+users:
+- name: api-server
+  user:
+    client-certificate: /etc/kubernetes/admission/apiserver-client-cert.pem     # cert for the webhook admission controller to use
+    client-key:  /etc/kubernetes/admission/apiserver-client-key.pem             # key matching the cert

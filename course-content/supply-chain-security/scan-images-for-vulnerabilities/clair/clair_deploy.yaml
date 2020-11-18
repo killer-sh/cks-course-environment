@@ -1,0 +1,211 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clair
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: clair-postgres
+  name: clair-postgres
+  namespace: clair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clair-postgres
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: clair-postgres
+    spec:
+      containers:
+        - image: postgres:12.4-alpine
+          name: postgres
+          resources: {}
+          env:
+            - name: POSTGRES_PASSWORD
+              value: clair
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: clair-postgres
+  name: clair-postgres
+  namespace: clair
+spec:
+  ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: clair-postgres
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clair
+  namespace: clair
+data:
+  config.yaml: |
+    clair:
+      database:
+        # Database driver
+        type: pgsql
+        options:
+          # PostgreSQL Connection string
+          # https://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-CONNSTRING
+          # This should be done using secrets or Vault, but for now this will also work
+          source: "postgres://postgres:clair@clair-postgres:5432/postgres?sslmode=disable"
+          
+
+          # Number of elements kept in the cache
+          # Values unlikely to change (e.g. namespaces) are cached in order to save prevent needless roundtrips to the database.
+          cachesize: 16384
+
+          # 32-bit URL-safe base64 key used to encrypt pagination tokens
+          # If one is not provided, it will be generated.
+          # Multiple clair instances in the same cluster need the same value.
+          paginationkey: "XxoPtCUzrUv4JV5dS+yQ+MdW7yLEJnRMwigVY/bpgtQ="
+      api:
+        # v3 grpc/RESTful API server address
+        addr: "0.0.0.0:6060"
+
+        # Health server address
+        # This is an unencrypted endpoint useful for load balancers to check to healthiness of the clair server.
+        healthaddr: "0.0.0.0:6061"
+
+        # Deadline before an API request will respond with a 503
+        timeout: 900s
+
+        # Optional PKI configuration
+        # If you want to easily generate client certificates and CAs, try the following projects:
+        # https://github.com/coreos/etcd-ca
+        # https://github.com/cloudflare/cfssl
+        servername:
+        cafile:
+        keyfile:
+        certfile:
+
+      worker:
+        namespace_detectors:
+        - os-release
+        - lsb-release
+        - apt-sources
+        - alpine-release
+        - redhat-release
+
+        feature_listers:
+        - apk
+        - dpkg
+        - rpm
+
+      updater:
+        # Frequency the database will be updated with vulnerabilities from the default data sources
+        # The value 0 disables the updater entirely.
+        interval: "2h"
+        enabledupdaters:
+        - debian
+        - ubuntu
+        - rhel
+        - oracle
+        - alpine
+
+      notifier:
+        # Number of attempts before the notification is marked as failed to be sent
+        attempts: 3
+
+        # Duration before a failed notification is retried
+        renotifyinterval: 2h
+
+        http:
+          # Optional endpoint that will receive notifications via POST requests
+          endpoint: "https://example.com/notify/me"
+
+          # Optional PKI configuration
+          # If you want to easily generate client certificates and CAs, try the following projects:
+          # https://github.com/cloudflare/cfssl
+          # https://github.com/coreos/etcd-ca
+          servername:
+          cafile:
+          keyfile:
+          certfile:
+
+          # Optional HTTP Proxy: must be a valid URL (including the scheme).
+          proxy:
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clair
+  namespace: clair
+spec:
+  type: ClusterIP
+  ports:
+  - name: clair-api
+    port: 6060
+    targetPort: 6060
+    protocol: TCP
+  - name: clair-health
+    port: 6061
+    targetPort: 6061
+    protocol: TCP
+  selector:
+    app: clair
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clair
+  labels:
+    component: clair
+  namespace: clair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clair
+  template:
+    metadata:
+      labels:
+        app: clair
+    spec:
+      volumes:
+      - name: "clair-config"
+        configMap:
+          name: clair
+      containers:
+      - name: clair
+        image: "quay.io/coreos/clair:v2.0.9"
+        imagePullPolicy: IfNotPresent
+        args:
+        - "-log-level=info"
+        
+        ports:
+        - name: clair-api
+          containerPort: 6060
+          protocol: TCP
+        - name: clair-health
+          containerPort: 6061
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 6061
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 6061
+        volumeMounts:
+        - name: "clair-config"
+          mountPath: /etc/clair
+        resources:
+          limits:
+            cpu: 200m
+            memory: 1500Mi
+          requests:
+            cpu: 100m
+            memory: 500Mi

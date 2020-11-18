@@ -1,0 +1,23 @@
+# allows backend pods to have incoming traffic from frontend pods and to cassandra namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      run: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            run: frontend
+  egress:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            ns: cassandra

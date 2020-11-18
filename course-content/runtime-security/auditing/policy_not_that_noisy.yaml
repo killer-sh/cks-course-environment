@@ -1,0 +1,29 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+
+# log no "read" actions
+- level: None
+  verbs: ["get", "watch", "list"]
+
+# log nothing regarding events
+- level: None
+  resources:
+  - group: "" # core
+    resources: ["events"]
+
+# log nothing coming from some components
+- level: None
+  users:
+  - "system:kube-scheduler"
+  - "system:kube-proxy"
+  - "system:apiserver"
+  - "system:kube-controller-manager"
+  - "system:serviceaccount:gatekeeper-system:gatekeeper-admin"
+
+# log nothing coming from some groups
+- level: None
+  userGroups: ["system:nodes"]
+
+# for everything else log on response level
+- level: RequestResponse

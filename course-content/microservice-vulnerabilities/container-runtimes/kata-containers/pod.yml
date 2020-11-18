@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-untrusted
+spec:
+  runtimeClassName: kata-containers
+  containers:
+  - name: nginx
+    image: nginx

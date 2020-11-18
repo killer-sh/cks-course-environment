@@ -1,0 +1,11 @@
+# deny all incoming and outgoing traffic from all pods in namespace cassandra
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cassandra-deny
+  namespace: cassandra
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress

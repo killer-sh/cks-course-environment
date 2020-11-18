@@ -1,0 +1,66 @@
+# all outgoing traffic if:
+# (destination namespace label=id=ns1 AND port=80) OR (destination pod label=id=backend in default namespace)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      id: frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          id: ns1
+    ports:
+    - protocol: TCP
+      port: 80
+
+  - to:
+    - podSelector:
+        matchLabels:
+          id: backend
+
+---
+
+# the following two NPs combined/merged are the same as the top one
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example2a
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      id: frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          id: ns1
+    ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example2b
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      id: frontend
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          id: backend

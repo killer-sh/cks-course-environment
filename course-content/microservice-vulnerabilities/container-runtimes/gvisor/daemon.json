@@ -1,0 +1,12 @@
+{
+  "exec-opts": [
+    "native.cgroupdriver=systemd"
+  ],
+  "log-driver": "json-file",
+  "runtimes": {
+    "runsc": {
+      "path": "/usr/bin/runsc"
+    }
+  },
+  "storage-driver": "overlay2"
+}
