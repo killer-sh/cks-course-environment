@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# https://gvisor.dev/docs/user_guide/install/
-
+# https://gvisor.dev/docs/user_guide/install
 
 # gvisor
 sudo apt-get update && \
@@ -11,45 +10,32 @@ sudo apt-get install -y \
     gnupg-agent \
     software-properties-common
 
-curl -fsSL https://gvisor.dev/archive.key | sudo apt-key add -
 
-sudo add-apt-repository "deb https://storage.googleapis.com/gvisor/releases release main"
-sudo apt-get update && sudo apt-get install -y runsc
-
-
+# install from web
+{
+  set -e
+  URL=https://storage.googleapis.com/gvisor/releases/release/latest
+#  URL=https://storage.googleapis.com/gvisor/releases/release/20201130.0 # try this version instead if latest doesn't work for you
+  wget ${URL}/runsc ${URL}/runsc.sha512 \
+    ${URL}/gvisor-containerd-shim ${URL}/gvisor-containerd-shim.sha512 \
+    ${URL}/containerd-shim-runsc-v1 ${URL}/containerd-shim-runsc-v1.sha512
+  sha512sum -c runsc.sha512 \
+    -c gvisor-containerd-shim.sha512 \
+    -c containerd-shim-runsc-v1.sha512
+  rm -f *.sha512
+  chmod a+rx runsc gvisor-containerd-shim containerd-shim-runsc-v1
+  sudo mv runsc gvisor-containerd-shim containerd-shim-runsc-v1 /usr/local/bin
+}
 
 # containerd enable runsc
-# WORKING
 mkdir -p /etc/containerd
-cat >> /etc/containerd/config.toml <<EOF
+cat > /etc/containerd/config.toml <<EOF
 disabled_plugins = ["restart"]
 [plugins.linux]
-  shim = "/usr/local/bin/gvisor-containerd-shim"
   shim_debug = true
 [plugins.cri.containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runtime.v1.linux"
-  runtime_engine = "/usr/bin/runsc"
-  runtime_root = "/run/containerd/runsc"
+  runtime_type = "io.containerd.runsc.v1"
 EOF
-
-# containerd runsc options
-{
-cat <<EOF | sudo tee /etc/containerd/runsc.toml
-[runsc_config]
-debug = true
-debug-log = /var/log/%ID%/gvisor.log
-EOF
-}
-
-
-# containerd runsc shim
-{
-wget https://github.com/google/gvisor/archive/release-20200622.1.tar.gz
-tar xzf release-20200622.1.tar.gz
-bash ./gvisor-release-20200622.1/tools/installers/shim.sh
-#cp /usr/bin/containerd-shim /usr/local/bin/containerd-shim # ?
-}
-
 
 # crictl should use containerd as default
 {
@@ -57,6 +43,8 @@ cat <<EOF | sudo tee /etc/crictl.yaml
 runtime-endpoint: unix:///run/containerd/containerd.sock
 EOF
 }
+
+systemctl restart containerd
 
 systemctl restart containerd
 
