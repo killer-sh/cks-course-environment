@@ -46,8 +46,6 @@ EOF
 
 systemctl restart containerd
 
-systemctl restart containerd
-
 # kubelet should use containerd
 {
 cat <<EOF | sudo tee /etc/default/kubelet
