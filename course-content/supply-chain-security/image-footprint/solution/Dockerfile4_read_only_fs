@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 go build app.go
 
 # app container stage 2
 FROM alpine:3.12.0
-RUN chmod a-r /etc
+RUN chmod a-w /etc
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser
 COPY --from=0 /app /home/appuser/
 USER appuser
