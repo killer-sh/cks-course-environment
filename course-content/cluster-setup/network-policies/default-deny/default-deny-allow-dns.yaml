@@ -1,0 +1,19 @@
+# deny all incoming and outgoing traffic from all pods in namespace default
+# but allow DNS traffic. This way you can do for example: kubectl exec frontend -- curl backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny
+  namespace: default
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  - Ingress
+  egress:
+  - to:
+    ports:
+      - port: 53
+        protocol: TCP
+      - port: 53
+        protocol: UDP
