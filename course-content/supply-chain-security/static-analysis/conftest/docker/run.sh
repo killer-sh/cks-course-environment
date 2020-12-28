@@ -1,1 +1,1 @@
-docker run --rm -v $(pwd):/project instrumenta/conftest test Dockerfile --all-namespaces
+docker run --rm -v $(pwd):/project openpolicyagent/conftest test Dockerfile --all-namespaces
