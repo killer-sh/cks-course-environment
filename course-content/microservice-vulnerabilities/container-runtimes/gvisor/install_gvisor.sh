@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# IF THIS FAILS then you can try to change the URL= further down from latest to a specific release
 # https://gvisor.dev/docs/user_guide/install
 
 # gvisor
