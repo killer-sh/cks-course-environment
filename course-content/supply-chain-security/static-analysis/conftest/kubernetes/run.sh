@@ -1,1 +1,1 @@
-docker run --rm -v $(pwd):/project instrumenta/conftest test deploy.yaml
+docker run --rm -v $(pwd):/project openpolicyagent/conftest test deploy.yaml
