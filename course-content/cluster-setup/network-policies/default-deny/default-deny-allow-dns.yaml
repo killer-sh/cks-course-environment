@@ -11,9 +11,8 @@ spec:
   - Egress
   - Ingress
   egress:
-  - to:
-    ports:
-      - port: 53
-        protocol: TCP
-      - port: 53
-        protocol: UDP
+  - ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
