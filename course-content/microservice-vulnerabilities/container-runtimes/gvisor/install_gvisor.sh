@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# IF THIS FAILS then you can try to change the URL= further down from latest to a specific release
+# IF THIS FAILS then you can try to change the URL= further down from specific to the latest release
 # https://gvisor.dev/docs/user_guide/install
 
 # gvisor
@@ -13,30 +13,33 @@ sudo apt-get install -y \
 
 
 # install from web
-{
+(
   set -e
-  URL=https://storage.googleapis.com/gvisor/releases/release/latest
-#  URL=https://storage.googleapis.com/gvisor/releases/release/20201130.0 # try this version instead if latest doesn't work for you
+  ARCH=$(uname -m)
+  URL=https://storage.googleapis.com/gvisor/releases/release/20210806/${ARCH}
+  # URL=https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH} # TRY THIS URL INSTEAD IF THE SCRIPT DOESNT WORK FOR YOU
   wget ${URL}/runsc ${URL}/runsc.sha512 \
-    ${URL}/gvisor-containerd-shim ${URL}/gvisor-containerd-shim.sha512 \
     ${URL}/containerd-shim-runsc-v1 ${URL}/containerd-shim-runsc-v1.sha512
   sha512sum -c runsc.sha512 \
-    -c gvisor-containerd-shim.sha512 \
     -c containerd-shim-runsc-v1.sha512
   rm -f *.sha512
-  chmod a+rx runsc gvisor-containerd-shim containerd-shim-runsc-v1
-  sudo mv runsc gvisor-containerd-shim containerd-shim-runsc-v1 /usr/local/bin
-}
+  chmod a+rx runsc containerd-shim-runsc-v1
+  sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin
+)
 
 # containerd enable runsc
 mkdir -p /etc/containerd
-cat > /etc/containerd/config.toml <<EOF
-disabled_plugins = ["restart"]
-[plugins.linux]
+cat <<EOF | sudo tee /etc/containerd/config.toml
+version = 2
+[plugins."io.containerd.runtime.v1.linux"]
   shim_debug = true
-[plugins.cri.containerd.runtimes.runsc]
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  runtime_type = "io.containerd.runc.v2"
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
   runtime_type = "io.containerd.runsc.v1"
 EOF
+
+
 
 # crictl should use containerd as default
 {
