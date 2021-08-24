@@ -28,7 +28,7 @@ sudo apt-get install -y \
 )
 
 # containerd enable runsc
-#mkdir -p /etc/containerd
+mkdir -p /etc/containerd
 cat <<EOF | sudo tee /etc/containerd/config.toml
 version = 2
 [plugins."io.containerd.runtime.v1.linux"]
