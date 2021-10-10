@@ -2,6 +2,7 @@
 # IF THIS FAILS then you can try to change the URL= further down from specific to the latest release
 # https://gvisor.dev/docs/user_guide/install
 
+
 # gvisor
 sudo apt-get update && \
 sudo apt-get install -y \
@@ -27,34 +28,44 @@ sudo apt-get install -y \
   sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin
 )
 
+
 # containerd enable runsc
-mkdir -p /etc/containerd
-cat <<EOF | sudo tee /etc/containerd/config.toml
+cat > /etc/containerd/config.toml <<EOF
+disabled_plugins = []
+imports = []
+oom_score = 0
+plugin_dir = ""
+required_plugins = []
+root = "/var/lib/containerd"
+state = "/run/containerd"
 version = 2
-[plugins."io.containerd.runtime.v1.linux"]
-  shim_debug = true
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-  runtime_type = "io.containerd.runc.v2"
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
-  runtime_type = "io.containerd.runsc.v1"
+
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runsc]
+    runtime_type = "io.containerd.runsc.v1"
+
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+      base_runtime_spec = ""
+      container_annotations = []
+      pod_annotations = []
+      privileged_without_host_devices = false
+      runtime_engine = ""
+      runtime_root = ""
+      runtime_type = "io.containerd.runc.v2"
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+        BinaryName = ""
+        CriuImagePath = ""
+        CriuPath = ""
+        CriuWorkPath = ""
+        IoGid = 0
+        IoUid = 0
+        NoNewKeyring = false
+        NoPivotRoot = false
+        Root = ""
+        ShimCgroup = ""
+        SystemdCgroup = true
 EOF
-
-
-
-# crictl should use containerd as default
-{
-cat <<EOF | sudo tee /etc/crictl.yaml
-runtime-endpoint: unix:///run/containerd/containerd.sock
-EOF
-}
 
 systemctl restart containerd
-
-# kubelet should use containerd
-{
-cat <<EOF | sudo tee /etc/default/kubelet
-KUBELET_EXTRA_ARGS="--container-runtime remote --container-runtime-endpoint unix:///run/containerd/containerd.sock"
-EOF
-}
-systemctl daemon-reload
-systemctl restart kubelet
