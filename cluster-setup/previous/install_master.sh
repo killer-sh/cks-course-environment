@@ -26,6 +26,7 @@ sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 ### remove packages
 kubeadm reset -f
+crictl rm $(crictl ps -a -q)
 apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni
 apt-get autoremove -y
 systemctl daemon-reload
@@ -90,7 +91,7 @@ version = 2
         NoPivotRoot = false
         Root = ""
         ShimCgroup = ""
-        SystemdCgroup = true
+        SystemdCgroup = false
 EOF
 
 
@@ -125,7 +126,6 @@ systemctl enable kubelet && systemctl start kubelet
 
 ### init k8s
 rm /root/.kube/config
-kubeadm reset -f
 kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print
 
 mkdir -p ~/.kube

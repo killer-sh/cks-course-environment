@@ -26,6 +26,7 @@ sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 ### remove packages
 kubeadm reset -f
+crictl rm $(crictl ps -a -q)
 apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni
 apt-get autoremove -y
 systemctl daemon-reload
@@ -90,7 +91,7 @@ version = 2
         NoPivotRoot = false
         Root = ""
         ShimCgroup = ""
-        SystemdCgroup = true
+        SystemdCgroup = false
 EOF
 
 
