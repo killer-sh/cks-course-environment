@@ -135,7 +135,12 @@ kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumC
 mkdir -p ~/.kube
 sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
 
-kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+# workaround because https://github.com/weaveworks/weave/issues/3927
+# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+curl -L https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n') -o weave.yaml
+sed -i 's/ghcr.io\/weaveworks\/launcher/docker.io\/weaveworks/g' weave.yaml
+kubectl -f weave.yaml apply
+
 
 echo
 echo "### COMMAND TO ADD A WORKER NODE ###"
