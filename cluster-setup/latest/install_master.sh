@@ -140,6 +140,7 @@ sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
 curl -L https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n') -o weave.yaml
 sed -i 's/ghcr.io\/weaveworks\/launcher/docker.io\/weaveworks/g' weave.yaml
 kubectl -f weave.yaml apply
+rm weave.yaml
 
 
 echo
