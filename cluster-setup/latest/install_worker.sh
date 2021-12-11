@@ -2,6 +2,8 @@
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm
 
+set -e
+
 KUBE_VERSION=1.22.2
 
 
@@ -25,9 +27,10 @@ sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 
 ### remove packages
-kubeadm reset -f
-crictl rm --force $(crictl ps -a -q)
-apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni
+kubeadm reset -f || true
+crictl rm --force $(crictl ps -a -q) || true
+apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
+apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni || true
 apt-get autoremove -y
 systemctl daemon-reload
 
@@ -39,6 +42,7 @@ deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 apt-get update
 apt-get install -y docker.io containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni
+apt-mark hold kubelet kubeadm kubectl kubernetes-cni
 
 
 ### containerd
@@ -132,6 +136,8 @@ systemctl enable kubelet && systemctl start kubelet
 kubeadm reset -f
 systemctl daemon-reload
 service kubelet start
+
+apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
 
 echo
 echo "EXECUTE ON MASTER: kubeadm token create --print-join-command --ttl 0"
