@@ -2,6 +2,8 @@
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm
 
+set -e
+
 KUBE_VERSION=1.21.5
 
 
@@ -25,9 +27,10 @@ sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 
 ### remove packages
-kubeadm reset -f
-crictl rm --force $(crictl ps -a -q)
-apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni
+kubeadm reset -f || true
+crictl rm --force $(crictl ps -a -q) || true
+apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
+apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni || true
 apt-get autoremove -y
 systemctl daemon-reload
 
@@ -39,6 +42,7 @@ deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 apt-get update
 apt-get install -y docker.io containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni
+apt-mark hold kubelet kubeadm kubectl kubernetes-cni
 
 
 ### containerd
@@ -129,7 +133,7 @@ systemctl enable kubelet && systemctl start kubelet
 
 
 ### init k8s
-rm /root/.kube/config
+rm /root/.kube/config || true
 kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print
 
 mkdir -p ~/.kube
@@ -142,6 +146,7 @@ sed -i 's/ghcr.io\/weaveworks\/launcher/docker.io\/weaveworks/g' weave.yaml
 kubectl -f weave.yaml apply
 rm weave.yaml
 
+apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
 
 echo
 echo "### COMMAND TO ADD A WORKER NODE ###"
