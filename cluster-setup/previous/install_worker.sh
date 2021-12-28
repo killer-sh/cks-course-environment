@@ -95,7 +95,7 @@ version = 2
         NoPivotRoot = false
         Root = ""
         ShimCgroup = ""
-        SystemdCgroup = true
+        SystemdCgroup = false
 EOF
 
 
