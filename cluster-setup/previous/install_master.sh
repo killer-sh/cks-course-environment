@@ -148,6 +148,15 @@ rm weave.yaml
 
 apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
 
+
+# etcdctl
+ETCDCTL_VERSION=v3.5.1
+ETCDCTL_VERSION_FULL=etcd-${ETCDCTL_VERSION}-linux-amd64
+wget https://github.com/etcd-io/etcd/releases/download/${ETCDCTL_VERSION}/${ETCDCTL_VERSION_FULL}.tar.gz
+tar xzf ${ETCDCTL_VERSION_FULL}.tar.gz
+mv ${ETCDCTL_VERSION_FULL}/etcdctl /usr/bin/
+rm -rf ${ETCDCTL_VERSION_FULL} ${ETCDCTL_VERSION_FULL}.tar.gz
+
 echo
 echo "### COMMAND TO ADD A WORKER NODE ###"
 kubeadm token create --print-join-command --ttl 0
