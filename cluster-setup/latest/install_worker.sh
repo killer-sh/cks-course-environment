@@ -5,11 +5,24 @@
 set -e
 
 KUBE_VERSION=1.23.4
+. /etc/os-release
+
+### add repos
+echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+
+### update repos
+sudo apt-get update
 
 
 ### setup terminal
-apt-get update
-apt-get install -y bash-completion binutils
+sudo apt-get install -y bash-completion binutils
 echo 'colorscheme ron' >> ~/.vimrc
 echo 'set tabstop=2' >> ~/.vimrc
 echo 'set shiftwidth=2' >> ~/.vimrc
@@ -22,27 +35,28 @@ sed -i '1s/^/force_color_prompt=yes\n/' ~/.bashrc
 
 
 ### disable linux swap and remove any existing swap partitions
-swapoff -a
-sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+sudo swapoff -a
+sudo sed -i -e '/[[:space:]]\+swap[[:space:]]\+/ s/^\(.*\)$/#\1/g' /etc/fstab
 
 
 ### remove packages
-kubeadm reset -f || true
-crictl rm --force $(crictl ps -a -q) || true
-apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
-apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni || true
-apt-get autoremove -y
-systemctl daemon-reload
+sudo kubeadm reset -f || true
+sudo crictl rm --force $(sudo crictl ps -a -q) || true
+sudo apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
+sudo apt-get purge -y kubelet kubeadm kubectl kubernetes-cni || true
+sudo apt-get remove -y docker.io containerd || true
+sudo apt-get autoremove -y
+sudo systemctl daemon-reload
+
+
+### cleanup cni leftovers
+sudo bash -c 'rm -rf /opt/cni/bin/* || true'
+sudo bash -c 'rm -rf /etc/cni/net.d/* || true'
 
 
 ### install packages
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
-deb http://apt.kubernetes.io/ kubernetes-xenial main
-EOF
-apt-get update
-apt-get install -y docker.io containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni
-apt-mark hold kubelet kubeadm kubectl kubernetes-cni
+sudo apt-get install -y docker.io containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni
+sudo apt-mark hold kubelet kubeadm kubectl kubernetes-cni
 
 
 ### containerd
@@ -62,7 +76,7 @@ sudo mkdir -p /etc/containerd
 
 
 ### containerd config
-cat > /etc/containerd/config.toml <<EOF
+cat <<EOF | sudo tee /etc/containerd/config.toml
 disabled_plugins = []
 imports = []
 oom_score = 0
@@ -116,8 +130,7 @@ EOF
 
 
 ### install podman
-apt-get install software-properties-common -y
-add-apt-repository -y ppa:projectatomic/ppa
+sudo apt-get install software-properties-common -y
 sudo apt-get -qq -y install podman containers-common
 cat <<EOF | sudo tee /etc/containers/registries.conf
 [registries.search]
@@ -126,20 +139,21 @@ EOF
 
 
 ### start services
-systemctl daemon-reload
-systemctl enable containerd
-systemctl restart containerd
-systemctl enable kubelet && systemctl start kubelet
+sudo systemctl daemon-reload
+sudo systemctl enable containerd
+sudo systemctl restart containerd
+sudo systemctl enable kubelet
+sudo systemctl start kubelet
 
 
 ### init k8s
-kubeadm reset -f
-systemctl daemon-reload
-service kubelet start
+sudo kubeadm reset -f
+sudo systemctl daemon-reload
+sudo service kubelet start
 
-apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
+sudo apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
 
 echo
 echo "EXECUTE ON MASTER: kubeadm token create --print-join-command --ttl 0"
-echo "THEN RUN THE OUTPUT AS COMMAND HERE TO ADD AS WORKER"
+echo "THEN RUN THE OUTPUT AS COMMAND HERE TO ADD AS WORKER WITH SUDO"
 echo
