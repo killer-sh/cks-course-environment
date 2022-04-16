@@ -37,8 +37,8 @@ sed -i '1s/^/force_color_prompt=yes\n/' ~/.bashrc
 
 
 ### disable linux swap and remove any existing swap partitions
-swapoff -a
-sed -i '/\sswap\s/ s/^\(.*\)$/#\1/g' /etc/fstab
+sudo swapoff -a
+sudo sed -i '/\sswap\s/ s/^\(.*\)$/#\1/g' /etc/fstab
 
 
 ### remove packages
