@@ -31,6 +31,8 @@ kubeadm reset -f || true
 crictl rm --force $(crictl ps -a -q) || true
 apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
 apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni || true
+# unattended upgrades are a bad idea on a k8s node, especially if an "apt-mark hold" isn't done on the k8s packages$
+apt-get remove -y unattended-upgrades || true$
 apt-get autoremove -y
 systemctl daemon-reload
 
@@ -137,7 +139,7 @@ kubeadm reset -f
 systemctl daemon-reload
 service kubelet start
 
-apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
+# apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
 
 echo
 echo "EXECUTE ON MASTER: kubeadm token create --print-join-command --ttl 0"
