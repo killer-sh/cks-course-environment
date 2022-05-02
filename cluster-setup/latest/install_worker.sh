@@ -4,7 +4,7 @@
 
 set -e
 
-KUBE_VERSION=1.23.4
+KUBE_VERSION=1.23.6
 
 
 ### setup terminal
