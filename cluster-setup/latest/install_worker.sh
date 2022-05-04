@@ -155,7 +155,6 @@ kubeadm reset -f
 systemctl daemon-reload
 service kubelet start
 
-apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
 
 echo
 echo "EXECUTE ON MASTER: kubeadm token create --print-join-command --ttl 0"

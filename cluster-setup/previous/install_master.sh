@@ -159,8 +159,6 @@ sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
 ### CNI
 kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/calico.yaml
 
-apt-mark unhold kubelet kubeadm kubectl kubernetes-cni
-
 
 # etcdctl
 ETCDCTL_VERSION=v3.5.1
