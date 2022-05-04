@@ -33,6 +33,11 @@ echo 'complete -F __start_kubectl k' >> ~/.bashrc
 sed -i '1s/^/force_color_prompt=yes\n/' ~/.bashrc
 
 
+### additional command-line tools present in CKS exam environment (https://docs.linuxfoundation.org/tc-docs/certification/important-instructions-cks)
+apt-get install -y jq
+snap install yq
+
+
 ### disable linux swap and remove any existing swap partitions
 swapoff -a
 sed -i '/\sswap\s/ s/^\(.*\)$/#\1/g' /etc/fstab
