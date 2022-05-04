@@ -4,6 +4,18 @@
 
 set -e
 
+source /etc/lsb-release
+if [ "$DISTRIB_RELEASE" != "20.04" ]; then
+    echo "################################# "
+    echo "############ WARNING ############ "
+    echo "################################# "
+    echo
+    echo "This script only works on Ubuntu 20.04!"
+    echo "You're using: ${DISTRIB_DESCRIPTION}"
+    echo "Better ABORT with Ctrl+C. Or press any key to continue the install"
+    read
+fi
+
 KUBE_VERSION=1.23.6
 
 
@@ -33,6 +45,20 @@ apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
 apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni || true
 apt-get autoremove -y
 systemctl daemon-reload
+
+
+
+### install podman
+. /etc/os-release
+echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+apt-get update -qq
+apt-get -qq -y install podman cri-tools containers-common
+rm /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+cat <<EOF | sudo tee /etc/containers/registries.conf
+[registries.search]
+registries = ['docker.io']
+EOF
 
 
 ### install packages
@@ -115,21 +141,13 @@ EOF
 }
 
 
-### install podman
-apt-get install software-properties-common -y
-add-apt-repository -y ppa:projectatomic/ppa
-sudo apt-get -qq -y install podman containers-common
-cat <<EOF | sudo tee /etc/containers/registries.conf
-[registries.search]
-registries = ['docker.io']
-EOF
-
 
 ### start services
 systemctl daemon-reload
 systemctl enable containerd
 systemctl restart containerd
 systemctl enable kubelet && systemctl start kubelet
+
 
 
 ### init k8s
