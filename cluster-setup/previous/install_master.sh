@@ -48,17 +48,18 @@ systemctl daemon-reload
 
 
 
+# there are issues with installing podman on ubuntu 20.04, we disabled it till its fixed
 ### install podman
-. /etc/os-release
-echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
-curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
-apt-get update -qq
-apt-get -qq -y install podman cri-tools containers-common
-rm /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
-cat <<EOF | sudo tee /etc/containers/registries.conf
-[registries.search]
-registries = ['docker.io']
-EOF
+#. /etc/os-release
+#echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+#curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/testing/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+#apt-get update -qq
+#apt-get -qq -y install podman cri-tools containers-common
+#rm /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+#cat <<EOF | sudo tee /etc/containers/registries.conf
+#[registries.search]
+#registries = ['docker.io']
+#EOF
 
 
 ### install packages
