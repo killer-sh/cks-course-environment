@@ -1,8 +1,72 @@
-#!/bin/sh
+#!/bin/bash
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm
 
 set -e
+
+print_usage () {
+    echo ""
+    echo "Usage $0 -v 1.23.6 -M"
+    echo "  -v set kubernetes version"
+    echo "  -M if set, installs control plane components. "
+    echo "      use flag to install Master node"
+}
+
+
+configure_master () {
+  ### init k8s
+  rm /root/.kube/config || true
+  kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print --pod-network-cidr 192.168.0.0/16
+
+  mkdir -p /root/.kube
+  sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+
+  ### CNI
+  kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/calico.yaml
+
+  # etcdctl
+  ETCDCTL_VERSION=v3.5.1
+  ETCDCTL_VERSION_FULL=etcd-${ETCDCTL_VERSION}-linux-amd64
+  wget https://github.com/etcd-io/etcd/releases/download/${ETCDCTL_VERSION}/${ETCDCTL_VERSION_FULL}.tar.gz
+  tar xzf ${ETCDCTL_VERSION_FULL}.tar.gz
+  mv ${ETCDCTL_VERSION_FULL}/etcdctl /usr/bin/
+  rm -rf ${ETCDCTL_VERSION_FULL} ${ETCDCTL_VERSION_FULL}.tar.gz
+
+  echo
+  echo "### PASTE THE FOLLOWING COMMAND ON WORKER NODE's TO ADD THE CLUSTER ###"
+  kubeadm token create --print-join-command --ttl 0
+}
+
+
+configure_worker () {
+  ### init k8s
+  kubeadm reset -f
+  systemctl daemon-reload
+  service kubelet start
+
+  echo
+  echo "EXECUTE ON MASTER: kubeadm token create --print-join-command --ttl 0"
+  echo "THEN RUN THE OUTPUT AS COMMAND HERE TO ADD AS WORKER"
+  echo
+}
+
+# Parse CLI arguments
+while getopts 'v:M' flag; do
+  case "${flag}" in 
+    v) KUBE_VERSION="${OPTARG}" ;;
+    M) INSTALL_MASTER="TRUE" ;;
+    *) print_usage
+        exit 1 ;;
+  esac
+done
+
+
+if [[ ! -n "$KUBE_VERSION" ]] ; then
+  echo "Missing required argument: Kubernetes Version"
+  echo "Use -v flag to set Kubernetes version"
+  exit 1
+fi
+
 
 source /etc/lsb-release
 if [ "$DISTRIB_RELEASE" != "20.04" ]; then
@@ -16,8 +80,18 @@ if [ "$DISTRIB_RELEASE" != "20.04" ]; then
     read
 fi
 
-KUBE_VERSION=1.23.6
 
+if [[ -n $"INSTALL_MASTER" ]] ; then
+  echo "Are sure you want to setup this machine as Master Node with Kubernetes v${KUBE_VERSION} ?"
+else
+  echo "Are sure you want to setup this machine as Worker Node with Kubernetes v${KUBE_VERSION} ?"
+fi
+read -p "Continue installation [Y|n]: " CONTINUE_INSTALL
+
+if [[ $CONTINUE_INSTALL == 'n' ]] ; then
+  echo "Installation cancelled"
+  exit 1
+fi
 
 ### setup terminal
 apt-get update
@@ -33,7 +107,7 @@ echo 'complete -F __start_kubectl k' >> ~/.bashrc
 sed -i '1s/^/force_color_prompt=yes\n/' ~/.bashrc
 
 
-### disable linux swap and remove any existing swap partitions
+### Turn all swap off and disable swap permanently
 swapoff -a
 sed -i '/\sswap\s/ s/^\(.*\)$/#\1/g' /etc/fstab
 
@@ -45,7 +119,6 @@ apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
 apt-get remove -y docker.io containerd kubelet kubeadm kubectl kubernetes-cni || true
 apt-get autoremove -y
 systemctl daemon-reload
-
 
 
 ### install podman
@@ -141,22 +214,14 @@ EOF
 }
 
 
-
 ### start services
 systemctl daemon-reload
 systemctl enable containerd
 systemctl restart containerd
 systemctl enable kubelet && systemctl start kubelet
 
-
-
-### init k8s
-kubeadm reset -f
-systemctl daemon-reload
-service kubelet start
-
-
-echo
-echo "EXECUTE ON MASTER: kubeadm token create --print-join-command --ttl 0"
-echo "THEN RUN THE OUTPUT AS COMMAND HERE TO ADD AS WORKER"
-echo
+if [[ -n $"INSTALL_MASTER" ]] ; then
+  configure_master
+else
+  configure_worker
+fi
