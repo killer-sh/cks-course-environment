@@ -81,7 +81,7 @@ if [ "$DISTRIB_RELEASE" != "20.04" ]; then
 fi
 
 
-if [[ -n $"INSTALL_MASTER" ]] ; then
+if [[ ! -z $NSTALL_MASTER ]] ; then
   echo "Are sure you want to setup this machine as Master Node with Kubernetes v${KUBE_VERSION} ?"
 else
   echo "Are sure you want to setup this machine as Worker Node with Kubernetes v${KUBE_VERSION} ?"
@@ -220,7 +220,7 @@ systemctl enable containerd
 systemctl restart containerd
 systemctl enable kubelet && systemctl start kubelet
 
-if [[ -n $"INSTALL_MASTER" ]] ; then
+if [[ ! -z $INSTALL_MASTER ]] ; then
   configure_master
 else
   configure_worker
