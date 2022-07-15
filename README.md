@@ -9,9 +9,7 @@ And the [CKS CHALLENGE SERIES](https://killer.sh/r?d=cks-series)
 
 ## Setup Cluster in Gcloud
 
-### Setup cks-master
-
-#### Create VM
+### Create VM
 ```
 1. create VM:
 name: cks-master
@@ -29,37 +27,27 @@ gcloud compute instances create cks-master --zone=europe-west3-c \
 --boot-disk-size=50GB
 ```
 
-#### Configure
-```
+### Configure
+Change into user Root and download the setup script. 
+```console
 sudo -i
-bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_master.sh)
+curl https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install.sh
+chmod u+x install.sh
+```
+The scripts take a required `-v` argument with Kuberenetes version and optional `-M` flag, if present installs control plane components on the node.
+
+For setting up Master Node, run 
+```console
+./install.sh -v 1.23.6 -M
 ```
 
-### Setup cks-worker
-
-#### Create VM
-```
-1. create VM:
-name: cks-worker
-family: e2-medium (2vCPU, 4GB)
-image: ubuntu20.04 LTS focal
-disk: 50GB
+To set up a Worker Node, run
+```console
+./install.sh -v 1.23.6
 ```
 
-Like:
-```
-gcloud compute instances create cks-worker --zone=europe-west3-c \
---machine-type=e2-medium \
---image=ubuntu-2004-focal-v20220419 \
---image-project=ubuntu-os-cloud \
---boot-disk-size=50GB
-```
+> Always remember to use due diligence when running script from the internet.
 
-#### Configure
-```
-sudo -i
-bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_worker.sh)
-```
 
 ### Connect to cluster
 ```
