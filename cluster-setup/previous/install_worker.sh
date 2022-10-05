@@ -67,7 +67,7 @@ cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 apt-get update
-apt-get install -y docker.io containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni
+apt-get install -y containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni
 apt-mark hold kubelet kubeadm kubectl kubernetes-cni
 
 
@@ -97,9 +97,7 @@ required_plugins = []
 root = "/var/lib/containerd"
 state = "/run/containerd"
 version = 2
-
 [plugins]
-
   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
       base_runtime_spec = ""
@@ -109,7 +107,6 @@ version = 2
       runtime_engine = ""
       runtime_root = ""
       runtime_type = "io.containerd.runc.v2"
-
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
         BinaryName = ""
         CriuImagePath = ""
@@ -147,6 +144,8 @@ systemctl daemon-reload
 systemctl enable containerd
 systemctl restart containerd
 systemctl enable kubelet && systemctl start kubelet
+systemctl enable podman.service
+systemctl start podman.service
 
 
 
