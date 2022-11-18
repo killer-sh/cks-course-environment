@@ -162,9 +162,10 @@ kubectl apply -f https://raw.githubusercontent.com/killer-sh/cks-course-environm
 
 # etcdctl
 ETCDCTL_VERSION=v3.5.1
-ETCDCTL_VERSION_FULL=etcd-${ETCDCTL_VERSION}-linux-amd64
+ETCDCTL_ARCH=$(dpkg --print-architecture)
+ETCDCTL_VERSION_FULL=etcd-${ETCDCTL_VERSION}-linux-${ETCDCTL_ARCH}
 wget https://github.com/etcd-io/etcd/releases/download/${ETCDCTL_VERSION}/${ETCDCTL_VERSION_FULL}.tar.gz
-tar xzf ${ETCDCTL_VERSION_FULL}.tar.gz
+tar xzf ${ETCDCTL_VERSION_FULL}.tar.gz ${ETCDCTL_VERSION_FULL}/etcdctl
 mv ${ETCDCTL_VERSION_FULL}/etcdctl /usr/bin/
 rm -rf ${ETCDCTL_VERSION_FULL} ${ETCDCTL_VERSION_FULL}.tar.gz
 
