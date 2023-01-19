@@ -71,6 +71,16 @@ apt-get install -y docker.io containerd kubelet=${KUBE_VERSION}-00 kubeadm=${KUB
 apt-mark hold kubelet kubeadm kubectl kubernetes-cni
 
 
+### install containerd 1.6 over apt-installed-version
+wget https://github.com/containerd/containerd/releases/download/v1.6.12/containerd-1.6.12-linux-amd64.tar.gz
+tar xvf containerd-1.6.12-linux-amd64.tar.gz
+systemctl stop containerd
+mv bin/* /usr/bin
+rm -rf bin containerd-1.6.12-linux-amd64.tar.gz
+systemctl unmask containerd
+systemctl start containerd
+
+
 ### containerd
 cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
 overlay
