@@ -4,8 +4,6 @@ This is the repository of the [CKS FULL COURSE](https://killer.sh/r?d=cks-course
 
 There is also just the [CKS SIMULATOR](https://killer.sh/cks)
 
-And the [CKS CHALLENGE SERIES](https://killer.sh/r?d=cks-series)
-
 
 ## Setup Cluster in Gcloud
 
