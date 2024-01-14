@@ -1,9 +1,21 @@
 # Kubernetes CKS Course Environment
 
-This is the repository of the [CKS FULL COURSE](https://killer.sh/r?d=cks-course)
+This is the repository of the [CKS FULL COURSE](https://youtu.be/d9xfB5qaOfg) on Youtube
 
-There is also just the [CKS SIMULATOR](https://killer.sh/cks)
+There is also the [CKS SIMULATOR](https://killer.sh/cks)
 
+
+## Course Resources
+
+Many sections reference commands or links in their resources.
+
+[RESOURCES](Resources.md)
+
+## Killercoda Scenarios
+
+Many topics have interactive in-browser Killercoda scenarios at the end. Solve these to test and harden your knowledge!
+
+[SCENARIOS](Scenarios.md)
 
 ## Setup Cluster in Gcloud
 
