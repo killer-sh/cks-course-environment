@@ -1,6 +1,6 @@
 # Course Resources
 
-Many sections reference commands or links in their via their resources.
+Many sections reference commands or links in their resources.
 
 ## Create your course K8s cluster
 
