@@ -427,7 +427,7 @@ https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecurity
 
 ```
 
-## Microservice Vulnerabilities - Ope Policy Agent (OPA)
+## Microservice Vulnerabilities - Open Policy Agent (OPA)
 
 ```
 kubectl create -f https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/course-content/opa/gatekeeper.yaml
