@@ -18,6 +18,18 @@ fi
 
 KUBE_VERSION=1.29.2
 
+# get platform
+PLATFORM=`uname -p`
+
+if [ "${PLATFORM}" == "aarch64" ]; then
+  PLATFORM="arm64"
+elif [ "${PLATFORM}" == "x86_64" ]; then
+  PLATFORM="amd64"
+else
+  echo "${PLATFORM} has to be either amd64 or arm64/aarch64. Check containerd supported binaries page"
+  echo "https://github.com/containerd/containerd/blob/main/docs/getting-started.md#option-1-from-the-official-binaries"
+  exit 1
+fi
 
 ### setup terminal
 apt-get --allow-unauthenticated update
@@ -80,11 +92,11 @@ apt-mark hold kubelet kubeadm kubectl kubernetes-cni
 
 
 ### install containerd 1.6 over apt-installed-version
-wget https://github.com/containerd/containerd/releases/download/v1.6.12/containerd-1.6.12-linux-amd64.tar.gz
-tar xvf containerd-1.6.12-linux-amd64.tar.gz
+wget https://github.com/containerd/containerd/releases/download/v1.6.12/containerd-1.6.12-linux-${PLATFORM}.tar.gz
+tar xvf containerd-1.6.12-linux-${PLATFORM}.tar.gz
 systemctl stop containerd
 mv bin/* /usr/bin
-rm -rf bin containerd-1.6.12-linux-amd64.tar.gz
+rm -rf bin containerd-1.6.12-linux-${PLATFORM}.tar.gz
 systemctl unmask containerd
 systemctl start containerd
 
