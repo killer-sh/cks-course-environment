@@ -16,7 +16,7 @@ if [ "$DISTRIB_RELEASE" != "20.04" ]; then
     read
 fi
 
-KUBE_VERSION=1.28.7
+KUBE_VERSION=1.29.7
 
 # get platform
 PLATFORM=`uname -p`
