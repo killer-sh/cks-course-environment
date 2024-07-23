@@ -533,7 +533,7 @@ apt-get install -y linux-headers-$(uname -r)
 apt-get install -y falco=0.32.1
 
 # docs about falco
-https://v1-16.docs.kubernetes.io/docs/tasks/debug-application-cluster/falco
+https://falco.org/docs
 
 ---------------------------------------------------------------------------
 
