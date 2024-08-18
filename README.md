@@ -42,8 +42,10 @@ gcloud compute instances create cks-master --zone=europe-west3-c \
 #### Configure
 ```
 sudo -i
-bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_master.sh)
+wget -qO- https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_master.sh | bash
 ```
+
+you can optionally set the `POD_NETWORK_CIDR` env var (like `export POD_NETWORK_CIDR="172.16.0.0/12"`) to change the Pod network from the default CIDR of `192.168.0.0/16`.
 
 ### Setup cks-worker
 
@@ -68,7 +70,7 @@ gcloud compute instances create cks-worker --zone=europe-west3-c \
 #### Configure
 ```
 sudo -i
-bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_worker.sh)
+wget -qO- https://raw.githubusercontent.com/killer-sh/cks-course-environment/master/cluster-setup/latest/install_worker.sh | bash
 ```
 
 ### Connect to cluster

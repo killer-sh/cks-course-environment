@@ -1,8 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm
 
 set -e
+
+if [ "$UID" -ne 0 ]; then
+    echo "This script must be executed as root. Exiting."
+    exit 1
+fi
 
 source /etc/lsb-release
 if [ "$DISTRIB_RELEASE" != "20.04" ]; then
@@ -16,6 +21,7 @@ if [ "$DISTRIB_RELEASE" != "20.04" ]; then
     read
 fi
 
+POD_NETWORK_CIDR=${POD_NETWORK_CIDR:-"192.168.0.0/16"}
 KUBE_VERSION=1.30.3
 
 # get platform
@@ -33,7 +39,7 @@ fi
 
 ### setup terminal
 apt-get --allow-unauthenticated update
-apt-get --allow-unauthenticated install -y bash-completion binutils
+apt-get --allow-unauthenticated install -y bash-completion binutils curl
 echo 'colorscheme ron' >> ~/.vimrc
 echo 'set tabstop=2' >> ~/.vimrc
 echo 'set shiftwidth=2' >> ~/.vimrc
@@ -62,8 +68,8 @@ systemctl daemon-reload
 
 ### install podman
 . /etc/os-release
-echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
-curl -L "http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${DISTRIB_RELEASE}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+curl -L "http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${DISTRIB_RELEASE}/Release.key" | sudo apt-key add -
 apt-get update -qq
 apt-get -qq -y install podman cri-tools containers-common
 rm /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
@@ -181,7 +187,7 @@ systemctl enable kubelet && systemctl start kubelet
 
 ### init k8s
 rm /root/.kube/config || true
-kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print --pod-network-cidr 192.168.0.0/16
+kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print --pod-network-cidr ${POD_NETWORK_CIDR}
 
 mkdir -p ~/.kube
 sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config

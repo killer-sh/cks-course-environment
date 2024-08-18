@@ -1,8 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm
 
 set -e
+
+if [ "$UID" -ne 0 ]; then
+    echo "This script must be executed as root. Exiting."
+    exit 1
+fi
 
 source /etc/lsb-release
 if [ "$DISTRIB_RELEASE" != "20.04" ]; then
@@ -33,7 +38,7 @@ fi
 
 ### setup terminal
 apt-get --allow-unauthenticated update
-apt-get --allow-unauthenticated install -y bash-completion binutils
+apt-get --allow-unauthenticated install -y bash-completion binutils curl
 echo 'colorscheme ron' >> ~/.vimrc
 echo 'set tabstop=2' >> ~/.vimrc
 echo 'set shiftwidth=2' >> ~/.vimrc
@@ -62,8 +67,8 @@ systemctl daemon-reload
 
 ### install podman
 . /etc/os-release
-echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
-curl -L "http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${DISTRIB_RELEASE}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
+curl -L "http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${DISTRIB_RELEASE}/Release.key" | sudo apt-key add -
 apt-get update -qq
 apt-get -qq -y install podman cri-tools containers-common
 rm /etc/apt/sources.list.d/devel:kubic:libcontainers:testing.list
