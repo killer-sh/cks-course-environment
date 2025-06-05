@@ -17,6 +17,11 @@ Many topics have interactive in-browser Killercoda scenarios at the end. Solve t
 
 [SCENARIOS](Scenarios.md)
 
+
+## Support
+https://killer.sh/slack
+https://killer.sh/support
+
 ## Setup Cluster in Gcloud
 
 ### Setup cks-master
@@ -26,7 +31,7 @@ Many topics have interactive in-browser Killercoda scenarios at the end. Solve t
 1. create VM:
 name: cks-master
 family: e2-medium (2vCPU, 4GB)
-image: ubuntu20.04 LTS focal
+image: ubuntu24.04 LTS focal
 disk: 50GB
 ```
 
@@ -34,9 +39,12 @@ Like:
 ```
 gcloud compute instances create cks-master --zone=europe-west3-c \
 --machine-type=e2-medium \
---image=ubuntu-2004-focal-v20220419 \
+--image=ubuntu-2404-noble-amd64-v20250530 \
 --image-project=ubuntu-os-cloud \
 --boot-disk-size=50GB
+
+# see available images:
+gcloud compute images list --project=ubuntu-os-cloud --no-standard-images --filter="name~'ubuntu-2404'"
 ```
 
 #### Configure
@@ -52,7 +60,7 @@ bash <(curl -s https://raw.githubusercontent.com/killer-sh/cks-course-environmen
 1. create VM:
 name: cks-worker
 family: e2-medium (2vCPU, 4GB)
-image: ubuntu20.04 LTS focal
+image: ubuntu24.04 LTS focal
 disk: 50GB
 ```
 
@@ -60,9 +68,12 @@ Like:
 ```
 gcloud compute instances create cks-worker --zone=europe-west3-c \
 --machine-type=e2-medium \
---image=ubuntu-2004-focal-v20220419 \
+--image=ubuntu-2404-noble-amd64-v20250530 \
 --image-project=ubuntu-os-cloud \
 --boot-disk-size=50GB
+
+# see available images:
+gcloud compute images list --project=ubuntu-os-cloud --no-standard-images --filter="name~'ubuntu-2404'"
 ```
 
 #### Configure
