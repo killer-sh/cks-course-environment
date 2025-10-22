@@ -5,7 +5,7 @@ denylist = [
   "ubuntu"
 ]
 
-deny[msg] {
+deny contains msg if {
   input[i].Cmd == "from"
   val := input[i].Value
   contains(val[i], denylist[_])

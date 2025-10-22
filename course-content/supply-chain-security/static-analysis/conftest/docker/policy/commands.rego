@@ -10,7 +10,7 @@ denylist = [
   "wget",
 ]
 
-deny[msg] {
+deny contains msg if {
   input[i].Cmd == "run"
   val := input[i].Value
   contains(val[_], denylist[_])
