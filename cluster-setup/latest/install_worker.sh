@@ -140,6 +140,28 @@ sudo sysctl --system
 sudo mkdir -p /etc/containerd
 
 
+### containerd registry hosts.toml
+sudo mkdir -p /etc/containerd/certs.d/docker.io
+cat > /etc/containerd/certs.d/docker.io/hosts.toml <<EOF
+server = "https://docker.io"
+
+[host."https://mirror.gcr.io"]
+  capabilities = ["pull", "resolve"]
+
+[host."https://registry-1.docker.io"]
+  capabilities = ["pull", "resolve"]
+EOF
+
+sudo mkdir -p "/etc/containerd/certs.d/registry.killer.sh:5000"
+cat > "/etc/containerd/certs.d/registry.killer.sh:5000/hosts.toml" <<EOF
+server = "https://registry.killer.sh:5000"
+
+[host."https://registry.killer.sh:5000"]
+  capabilities = ["pull", "resolve"]
+  skip_verify = true
+EOF
+
+
 ### containerd config
 cat > /etc/containerd/config.toml <<EOF
 disabled_plugins = []
@@ -270,19 +292,11 @@ version = 2
       key_model = "node"
 
     [plugins."io.containerd.grpc.v1.cri".registry]
-      config_path = ""
+      config_path = "/etc/containerd/certs.d"
 
       [plugins."io.containerd.grpc.v1.cri".registry.auths]
 
-      [plugins."io.containerd.grpc.v1.cri".registry.configs]
-        [plugins."io.containerd.grpc.v1.cri".registry.configs."registry.killer.sh:5000".tls]
-          insecure_skip_verify = true
-
       [plugins."io.containerd.grpc.v1.cri".registry.headers]
-
-      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-          endpoint = ["https://mirror.gcr.io", "https://registry-1.docker.io"]
 
 
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
