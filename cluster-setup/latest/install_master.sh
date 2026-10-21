@@ -85,7 +85,7 @@ sed -i '/\sswap\s/ s/^\(.*\)$/#\1/g' /etc/fstab
 kubeadm reset -f || true
 crictl rm --force $(crictl ps -a -q) || true
 apt-mark unhold kubelet kubeadm kubectl kubernetes-cni || true
-apt-get remove -y docker.io kubelet kubeadm kubectl kubernetes-cni || true
+apt-get remove -y docker.io kubelet kubeadm kubectl kubernetes-cni cri-tools || true
 apt-get autoremove -y
 systemctl daemon-reload
 
@@ -125,7 +125,7 @@ echo > /etc/apt/sources.list.d/kubernetes.list
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-1-37-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.37/deb/ /" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-1-36-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.36/deb/ /" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
 apt-get --allow-unauthenticated update
-apt-get --allow-unauthenticated install -y kubelet=${KUBE_VERSION}-1.1 kubeadm=${KUBE_VERSION}-1.1 kubectl=${KUBE_VERSION}-1.1 kubernetes-cni runc
+apt-get --allow-unauthenticated install -y kubelet=${KUBE_VERSION}-1.1 kubeadm=${KUBE_VERSION}-1.1 kubectl=${KUBE_VERSION}-1.1 kubernetes-cni cri-tools runc
 
 
 
